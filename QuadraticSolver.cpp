@@ -10,15 +10,6 @@
 #include <math.h>
 using namespace std;
 
-// CHANGE "SIMPLIFY" FUNCTION TO "STANDARDIZE" FUNCTION, CHANGE ALL OCCURENCES TO SAY "STANDARD FORM"
-// CHANGE "SOLUTIONS" TO "ROOTS" FUNCTION, CHANGE ALL OCCURENCES TO SAY "ROOTS"
-// ADD IN CHECKS TO MAKE SURE FUNCTION ENTERED IS VALID
-// ADD IN FACTORED FORM
-// ADD IN SUM AND PRODUCT OF ROOTS
-// ADD COMPLEX SOLUTIONS
-// WORK OUT WHAT HAPPENS WHEN YOU HAVE + A NEGATIVE NUMBER
-
-
 /** FUNCTION PROTOTYPES**********************************************/
 void InputEquation(double parameters [8]);
 void Roots(double parameters [8]);
@@ -28,36 +19,33 @@ void Intercepts(double parameters [8]);
 void Table(double parameters [8], int settings [7]);
 void Display(double parameters [8], int settings [7]);
 void Factor(double parameters [8]);
+string TrueFalse(int n);
 
 /** MAIN FUNCTION ***************************************************/
 int main()
 {
-	/** VARIABLE DECLARATION ****************************************/
-	int menuInput, settings[5] = 0, settings[6] = 0;
-	bool plotting = 0, vertex = 1, settings[1] = 1, settings[2] = 1, parameters[7] = 0, settings[3] = 1, factor = 1;
-	double orig_a, orig_b, orig_c, origD, origE, origF, parameters[0], parameters[1], parameters[2], parameters[3], parameters[4], settings[1]_value = 0, parameters[5], parameters[6];
-	/** FUNCTION CALLS***********************************************/
-	int settings[7];
+	int settings[7] = {1,1,1,1,1,-10,10}; // just for now, until I can write a real options menu
 	             /* 0 - vertex
-	              * 1 - settings[1]
-	              * 2 - settings[2]
-	              * 3 - settings[3]
+	              * 1 - y intercept
+	              * 2 - table
+	              * 3 - sum and product
 	              * 4 - factor
-	              * 5 - settings[5]
-	              * 6 - settings[6] */
+	              * 5 - table lower bound
+	              * 6 - table upper bound */
 	double parameters[8];
 	/* 0 - a
 	 * 1 - b
 	 * 2 - c
-	 * 3 - parameters[3]
-	 * 4 - parameters[4]
-	 * 5 - parameters[5]
-	 * 6 - parameters[6]
-	 * 7 - parameters[7]
+	 * 3 - x-value of vertex
+	 * 4 - y-value of vertex
+	 * 5 - solution 1
+	 * 6 - solution 2
+	 * 7 - no solutions
 	 */
 	cout << "Everything Quadratics!\n";
 	cout << "      Press enter\n";
 	cin.get();
+	int menu_input;
 	do
 	{
 		cout << "\nAvailable Functions\n";
@@ -67,46 +55,32 @@ int main()
 		cout << "3. Quit\n";
 		cout << "---------------------------------\n";
 		cout << "Enter choice: ";
-		cin >> menuInput;
-	if(menuInput == 1)
+		cin >> menu_input;
+	if(menu_input == 1)
 		Options(settings);
-	else if(menuInput == 2)
+	else if(menu_input == 2)
 		{
 		InputEquation(parameters);
 		Roots(parameters);
 		Display(parameters, settings);
 		}
-	cout << "\n\nHit enter to return to menu ";
-	cin.get();
-	}while(menuInput != 3);
+	cout << "\n\nHit enter to return to menu "; // not working
+	cin.get(); 
+	cin.get(); /* has to be repeated once */ 
+	}while(menu_input != 3);
    return 0;
 }
 
 /** FUNCTIONS *******************************************************/
 void InputEquation(double parameters [8])
 {
-	string raw_equation, a = "", b = "", c = "";
 	cout << "Equation will be entered in the form ax^2 + bx + c = 0\n\n";
-	cout << "Enter equation: ";
-	getline(cin, raw_equation);
-	getline(cin, raw_equation); /* has to be repeated */
-/*	int location_a = raw_equation.find('x^2');
-	for(int i = location_a; i >= 0; i--) {
-
-	}
-*/	cout << "Equation will be enter in the form ax^2 + bx + c = dx^2 + ex + f.\n";
 	cout << "Enter << a >> term: ";
-	cin >> orig_a;
+	cin >> parameters[0];
 	cout << "Enter << b >> term: ";
-	cin >> orig_b;
+	cin >> parameters[1];
 	cout << "Enter << c >> term: ";
-	cin >> orig_c;
-	cout << "Enter << d >> term: ";
-	cin >> origD;
-	cout << "Enter << e >> term: ";
-	cin >> origE;
-	cout << "Enter << f >> term: ";
-	cin >> origF;
+	cin >> parameters[2];
 }
 void Roots(double parameters [8])
 {
@@ -127,76 +101,45 @@ void Vertex(double parameters [8])
 }
 void Intercepts(double parameters [8])
 {
-		settings[1]_value = parameters[2];
+//		y_intercept_value = parameters[2]; /// can't remember the purpose of this function
 }
 void Options(int settings [7])
 {
-	char choice;
-	cout << "Calculate Vertex? (y/n) ";
+	cout << "\n\nSettings: \n";
+	cout << "---------------------------------------------\n";
+	string symbol = TrueFalse(settings[0]);
+	cout << "1. Calculate Vertex......................." << symbol << endl;
+	symbol = TrueFalse(settings[1]);
+	cout << "2. Calculate y-Intercept.................." << symbol << endl;
+	symbol = TrueFalse(settings[2]);
+	cout << "3. Print Table............................" << symbol << endl;
+	cout << "4. Set Table Parameters...................(" << settings[5] << "," << settings[6] << ")\n";
+	symbol = TrueFalse(settings[4]);
+	cout << "5. Factor Equation........................" << symbol << endl;
+	symbol = TrueFalse(settings[3]);
+	cout << "6. Calculate Sum and Product.............." << symbol << endl;
+	cout << "7. Back to Main Menu\n";
+	cout << "---------------------------------------------\n\n";
+	cout << "Enter number of choice you would like to change: ";
+	int choice;
 	cin >> choice;
-		if(choice == 'y')
-			vertex = 1;
-		else
-			vertex = 0;
-//	choice = 'n';
-	cout << "Calculate y-Intercept? (y/n) ";
-	cin >> choice;
-		if(choice == 'y')
-			settings[1] = 1;
-		else
-			settings[1] = 0;
-//	choice = 'n';
-	cout << "Display settings[2]? (y/n) ";
-	cin >> choice;
-		if(choice == 'y')
-		{
-			settings[2] = 1;
-			choice = 'n';
-			do
-			{
-			cout << "Enter lower bound for settings[2]: ";
-			cin >> settings[5];
-			cout << "Enter upper bound for settings[2]: ";
-			cin >> settings[6];
-				if(settings[5] > settings[6])
-					cout << "Error! Lower bound cannot be greater than upper bound!\n";
-			}while(settings[5] > settings[6]);
-		}
-		else
-			settings[2] = 0;
-//	choice = 'n';
-	cout << "Calculate sum and product of roots? (y/n)";
-	cin >> choice;
-	if(choice == 'y')
-		settings[3] = 1;
-	else
-		settings[3] = 0;
-//	choice = 'n';
-	cout << "Display factored form? (y/n)";
-	cin >> choice;
-	if(choice == 'y')
-		factor = 1;
-	else
-		factor = 0;
 }
-void settings[2](double parameters [8], int settings [7])
+void Table(double parameters [8], int settings [7])
 {
-	int x;
 	cout << "settings[2]\n";
 	cout << "   x             f(x)\n";
-	for(x = settings[5]; x <= settings[6]; x++)
+	for(int i = settings[5]; i <= settings[6]; i++)
 	{
-		cout << "   " << x << "          " << parameters[0] * x * x + parameters[1] * x + parameters[2] << endl;
+		cout << "   " << i << "          " << parameters[0] * i * i + parameters[1] * i + parameters[2] << endl;
 	}
 }
 void Display(double parameters [8], int settings [7])
 {
-	if(vertex == 1)
-		Vertex(parameters[0], parameters[1], parameters[2], parameters[3], parameters[4]);
+	if(settings[0] == 1)
+		Vertex(parameters);
 	if(settings[1] == 1)
-		Intercepts(parameters[0], parameters[1], parameters[2], settings[1]_value);
-	cout << "Original Equation: " << orig_a << "x^2 + " << orig_b << "x + " << orig_c << " = " << origD << "x^2 + " << origE << "x + " << origF << endl;
-	cout << "Equation in Standard Form: " << parameters[0] << "x^2 + " << parameters[1] << "x + " << parameters[2] << " = 0\n";
+		Intercepts(parameters);
+	cout << "Equation: " << parameters[0] << "x^2 + " << parameters[1] << "x + " << parameters[2] << " = 0\n";
 	if(parameters[7] == 1)
 		cout << "Equation has no solutions\n";
 	else
@@ -211,14 +154,14 @@ void Display(double parameters [8], int settings [7])
 		cout << "Sum of roots = " << parameters[5] + parameters[6] << endl; // NOT SURE WHAT HAPPENS IF ONLY ONE SOLUTION
 		cout << "Product of roots = " << parameters[5] * parameters[6] << endl;
 		}
-	if(factor == 1 && parameters[7] == 0)
-		Factor(parameters[0], parameters[5], parameters[6], parameters[7]);
-	if(vertex == 1)
+	if(settings[4] == 1 && parameters[7] == 0)
+		Factor(parameters);
+	if(settings[0] == 1)
 		cout << "Vertex at point (" << parameters[3] << "," << parameters[4] << ")\n";
 	if(settings[1] == 1)
-		cout << "y-Intercept at point (0," << settings[1]_value << ")\n";
+		cout << "y-Intercept at point (0," << parameters[1] << ")\n";
 	if(settings[2] == 1)
-		settings[2](settings[5], settings[6], parameters[0], parameters[1], parameters[2]);
+		Table(parameters, settings);
 }
 void Factor(double parameters [8])
 {
@@ -228,4 +171,10 @@ void Factor(double parameters [8])
 	}
 	else
 		cout << parameters[0] << "(x-" << parameters[5] << ")(x-" << parameters[6] << ")\n";
+}
+string TrueFalse(int n) {
+	if(n == 1)
+		return "TRUE";
+	else if(n == 0)
+		return "FALSE";
 }

@@ -8,6 +8,7 @@
 
 #include <iostream>	//	input output commands:	cout & cin
 #include <math.h>
+#include <fstream>
 using namespace std;
 
 /** FUNCTION PROTOTYPES**********************************************/
@@ -20,6 +21,9 @@ void Table(double parameters [8], int settings [7]);
 void Display(double parameters [8], int settings [7]);
 void Factor(double parameters [8]);
 string TrueFalse(int n);
+void LoadSettings(int settings [8]);
+int StringToInt(string s);
+void IntToString(int n);
 
 /** MAIN FUNCTION ***************************************************/
 int main()
@@ -65,8 +69,8 @@ int main()
 		Display(parameters, settings);
 		}
 	cout << "\n\nHit enter to return to menu "; // not working
-	cin.get(); 
-	cin.get(); /* has to be repeated once */ 
+	cin.get();
+	cin.get(); /* has to be repeated once */
 	}while(menu_input != 3);
    return 0;
 }
@@ -105,6 +109,7 @@ void Intercepts(double parameters [8])
 }
 void Options(int settings [7])
 {
+	LoadSettings(settings);
 	cout << "\n\nSettings: \n";
 	cout << "---------------------------------------------\n";
 	string symbol = TrueFalse(settings[0]);
@@ -112,17 +117,45 @@ void Options(int settings [7])
 	symbol = TrueFalse(settings[1]);
 	cout << "2. Calculate y-Intercept.................." << symbol << endl;
 	symbol = TrueFalse(settings[2]);
-	cout << "3. Print Table............................" << symbol << endl;
-	cout << "4. Set Table Parameters...................(" << settings[5] << "," << settings[6] << ")\n";
-	symbol = TrueFalse(settings[4]);
-	cout << "5. Factor Equation........................" << symbol << endl;
 	symbol = TrueFalse(settings[3]);
-	cout << "6. Calculate Sum and Product.............." << symbol << endl;
+	cout << "3. Calculate Sum and Product.............." << symbol << endl;
+	symbol = TrueFalse(settings[4]);
+	cout << "4. Factor Equation........................" << symbol << endl;
+	cout << "5. Print Table............................" << symbol << endl;
+	cout << "6. Set Table Parameters...................(" << settings[5] << "," << settings[6] << ")\n";
 	cout << "7. Back to Main Menu\n";
 	cout << "---------------------------------------------\n\n";
 	cout << "Enter number of choice you would like to change: ";
 	int choice;
+	string string_settings = "";
 	cin >> choice;
+	choice--;
+	if(choice != 6) {
+		if(settings[choice] == 1)
+			settings[choice] = 0;
+		else
+			settings[choice] = 1;
+			cout << "\nOption " << choice + 1 << " set to << ";
+			IntToString(settings[choice]);
+			cout <<  " >>\n";
+			for(int i = 0; i < 1; i++) {
+				if(settings[i] == 1)
+					string_settings = string_settings + '1';
+				else
+					string_settings = string_settings + '0';
+			}
+	}
+	else { /* choice = Set Table Parameters */
+		string bound;
+		cout << "Enter lower bound: ";
+		cin >> bound;
+
+	}
+		ofstream settings_file("quadraticsolver_settings");
+				    if(settings_file.is_open()) {
+				        settings_file << string_settings;
+				    }
+				    settings_file.close();
 }
 void Table(double parameters [8], int settings [7])
 {
@@ -177,4 +210,63 @@ string TrueFalse(int n) {
 		return "TRUE";
 	else if(n == 0)
 		return "FALSE";
+}
+void LoadSettings(int settings [8]) {
+	string line;
+	ifstream file_parameters ("quadraticsolver_settings");
+		if (file_parameters.is_open()) {
+			while ( getline (file_parameters,line) ) {
+			     for(int i = 0; i < 5; i++) {
+			    	 settings[i] = int(line[i]) - 48;
+			     }
+			     string table_parameter = "";
+			     int stop_point;
+			     for(int j = 5; j < line.size(); j++) {
+			    	 if(line[j] == ',') {
+			    		 stop_point = j;
+			    		 j = line.size(); /* break loop */
+			    	 }
+			    	 else
+			    	 	 table_parameter = table_parameter + line[j];
+			     }
+			     settings[5] = StringToInt(table_parameter);
+			     table_parameter = "";
+			     for(int k = stop_point; k < line.size(); k++) {
+			     	 if(line[k] == ',')
+			     		k = line.size(); /* break loop */
+			     	else
+			     		table_parameter = table_parameter + line[k];
+			     }
+			     settings[6] = StringToInt(table_parameter);
+			}
+			file_parameters.close();
+		 }
+		else { /* "stringmanipulator_parameters" does not exist - write a new file with default values */
+			ofstream file_parameters ("quadraticsolver_settings");
+			  if (file_parameters.is_open())
+			  {
+			    file_parameters << "11111-10,10";
+			    file_parameters.close();
+			  }
+			settings[0] = 1;
+		}
+}
+int StringToInt(string s) {
+	int num;
+	bool negative;
+	for(int i = 0; i < s.size(); i++) {
+		if(s[i] == '-')
+			negative = 1;
+		else
+			num = num * 10 + (s[i] - '0');
+	}
+	if(negative == 1)
+		return num * -1;
+	return num;
+}
+void IntToString(int n) {
+	if(n == 1)
+			cout << "TRUE\n";
+		else
+			cout << "FALSE\n";
 }

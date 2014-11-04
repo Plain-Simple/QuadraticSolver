@@ -1,0 +1,4 @@
+QuadraticSolver
+===============
+
+Everything Quadratics!

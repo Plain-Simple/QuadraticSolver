@@ -7,7 +7,7 @@
 /** INCLUDE FILES ***************************************************/
 
 #include <iostream>	//	input output commands:	cout & cin
-#include <math.h>
+#include <cmath>
 #include <fstream>
 using namespace std;
 

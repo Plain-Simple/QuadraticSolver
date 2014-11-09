@@ -11,25 +11,28 @@
 /** INCLUDE FILES ***************************************************/
 
 #include <iostream>	//	input output commands:	cout & cin
-#include <cmath> /// use cmath, not math.h
+#include <cmath>
 #include <fstream>
+#include <stdlib.h>
+#include <string>
 using namespace std;
 
 
 /** FUNCTION PROTOTYPES**********************************************/
 /* equation_standard[3], vertex[2], solution[2], has_solution is a bad name */
 void InputEquation(double equation_standard[3], double vertex[2], double solution[2], bool & has_solution);
-void Roots(double equation_standard[3], double vertex[2], double solution[2], bool & has_solution);
-void Vertex(double equation_standard[3], double vertex[2], double solution[2], bool & has_solution);
+void CalculateRoots(double equation_standard[3], double vertex[2], double solution[2], bool & has_solution);
+void CalculateVertex(double equation_standard[3], double vertex[2], double solution[2], bool & has_solution);
 void Options(bool & calc_vertex, bool & calc_yintercept, bool & print_table, bool & calc_sumproduct, bool & factor_equation, int table_boundaries[2]);
 void Intercepts(double equation_standard[3], double vertex[2], double solution[2], bool & has_solution);
 void Table(double equation_standard[3], double vertex[2], double solution[2], bool & has_solution, bool calc_vertex, bool calc_yintercept, bool print_table, bool calc_sumproduct, bool factor_equation, int table_boundaries[2]);
 void Display(double equation_standard[3], double vertex[2], double solution[2], bool & has_solution, bool calc_vertex, bool calc_yintercept, bool print_table, bool calc_sumproduct, bool factor_equation, int table_boundaries[2]);
 void Factor(double equation_standard[3], double vertex[2], double solution[2], bool & has_solution);
 void LoadSettings(bool & calc_vertex, bool & calc_yintercept, bool & print_table, bool & calc_sumproduct, bool & factor_equation, int table_boundaries[2]);
-/// the following function is obsolete:
-//int StringToInt(string s);
 string BoolToString(bool bool_to_convert);
+bool CharToBool(char c);
+char BoolToChar(bool b);
+string IntToString(int n);
 
 /** MAIN FUNCTION ***************************************************/
 int main() {
@@ -46,8 +49,8 @@ int main() {
    * 6 - solution 2
    * 7 - no solutions
    */
-  cout << "Everything Quadratics!\n";
-  cout << "      Press enter\n";
+  cout << "Plain+Simple Quadratic Solver\n";
+  cout << "        Press enter\n";
   cin.get();
   int menu_input;
   do {
@@ -64,7 +67,7 @@ int main() {
               factor_equation, table_boundaries);
     } else if(menu_input == 2) {
       InputEquation(equation_standard, vertex, solution, has_solution);
-      Roots(equation_standard, vertex, solution, has_solution);
+      CalculateRoots(equation_standard, vertex, solution, has_solution);
       Display(equation_standard, vertex, solution, has_solution, calc_vertex,
               calc_yintercept, print_table, calc_sumproduct, factor_equation,
               table_boundaries);
@@ -89,7 +92,7 @@ void InputEquation(double equation_standard[3], double vertex[2],
   cout << "Enter << c >> term: ";
   cin >> equation_standard[2];
 }
-void Roots(double equation_standard[3], double vertex[2], double solution[2],
+void CalculateRoots(double equation_standard[3], double vertex[2], double solution[2],
            bool & has_solution) {
   int discriminant;
   discriminant = equation_standard[1] * equation_standard[1] - 4 *
@@ -106,7 +109,7 @@ void Roots(double equation_standard[3], double vertex[2], double solution[2],
                    equation_standard[0] * equation_standard[2])) / (2 * equation_standard[0]);
   }
 }
-void Vertex(double equation_standard[3], double vertex[2], double solution[2],
+void CalculateVertex(double equation_standard[3], double vertex[2], double solution[2],
             bool & has_solution) {
   vertex[0] = (equation_standard[1] * -1) / (2 * equation_standard[0]);
   vertex[1] = equation_standard[0] * vertex[0] * vertex[0] + equation_standard[1]
@@ -119,6 +122,7 @@ void Intercepts(double equation_standard[3], double vertex[2],
 }
 void Options(bool & calc_vertex, bool & calc_yintercept, bool & print_table,
              bool & calc_sumproduct, bool & factor_equation, int table_boundaries[2]) {
+	string string_settings = "";
   LoadSettings(calc_vertex, calc_yintercept, print_table, calc_sumproduct,
                factor_equation, table_boundaries);
   cout << "\n\nSettings: \n";
@@ -127,56 +131,63 @@ void Options(bool & calc_vertex, bool & calc_yintercept, bool & print_table,
   cout << "1. Calculate Vertex......................." << symbol << endl;
   symbol = BoolToString(calc_yintercept);
   cout << "2. Calculate y-Intercept.................." << symbol << endl;
-  symbol = BoolToString(print_table);
   symbol = BoolToString(calc_sumproduct);
   cout << "3. Calculate Sum and Product.............." << symbol << endl;
   symbol = BoolToString(factor_equation);
   cout << "4. Factor Equation........................" << symbol << endl;
+  symbol = BoolToString(print_table);
   cout << "5. Print Table............................" << symbol << endl;
-  cout << "6. Set Table equation_standard[3], vertex[2], solution[2], has_solution...................("
-       << table_boundaries[0] << "," <<
-       table_boundaries[1] << ")\n";
+  cout << "6. Set Table Boundaries...................("
+       << table_boundaries[0] << "," << table_boundaries[1] << ")\n"; /// looks like we have some problems here, I'll fix that very soon
   cout << "7. Back to Main Menu\n";
   cout << "---------------------------------------------\n\n";
   cout << "Enter number of choice you would like to change: ";
   int choice;
-  string string_settings = ""; /// why is this declared right here?
   cin >> choice;
   switch(choice) {
   case 1:
     calc_vertex = !calc_vertex;
+    symbol = BoolToString(calc_vertex);
+    cout << "Calculate Vertex set to << " << symbol << " >>\n";
     break;
   case 2:
     calc_yintercept = ! calc_yintercept;
+    symbol = BoolToString(calc_yintercept);
+    cout << "Calculate y-Intercept set to << " << symbol << " >>\n";
     break;
   case 3:
     print_table = !print_table;
+    symbol = BoolToString(print_table);
+    cout << "Print Table set to << " << symbol << " >>\n";
     break;
   case 4:
     calc_sumproduct = !calc_sumproduct;
+    symbol = BoolToString(calc_sumproduct);
+    cout << "Calculate Sum and Product set to << " << symbol << " >>\n";
     break;
   case 5:
     factor_equation = !factor_equation;
+    symbol = BoolToString(factor_equation);
+    cout << "Factor Equation set to << " << symbol << " >>\n";
     break;
   case 6:
-    /* this does nothing so that the thing after the switch case takes it but it doesn't activate the default case */
+    cout << "Enter lower bound: ";
+    cin >> table_boundaries[0];
+    cout << "Enter upper bound: ";
+    cin >> table_boundaries[1];
     break;
+  case 7:
+	  break; /* this does nothing so that the thing after the switch case takes it but it doesn't activate the default case */
   default:
     /// it should give the user an error
     break;
   }
   /// some kind of string_settings stuff should be going on here
-  if(choice ==
-      7) {  /* choice = Set Table equation_standard[3], vertex[2], solution[2], has_solution */
-    int bound;
-    cout << "Enter lower bound: ";
-    cin >> bound;
-    table_boundaries[0] = bound;
-    cout << "Enter upper bound: ";
-    cin >> bound;
-    table_boundaries[1] = bound;
-  }
-  ofstream settings_file("quadraticsolver_settings");
+  string_settings = string_settings + BoolToChar(calc_vertex) + BoolToChar(calc_yintercept) + BoolToChar(print_table);
+  string_settings = string_settings + BoolToChar(calc_sumproduct) + BoolToChar(factor_equation);
+  string_settings = string_settings + IntToString(table_boundaries[0]) + IntToString(table_boundaries[1]);
+
+  ofstream settings_file("quadratics_settings");
   if(settings_file.is_open()) {
     settings_file << string_settings;
   }
@@ -197,7 +208,7 @@ void Display(double equation_standard[3], double vertex[2], double solution[2],
              bool & has_solution, bool calc_vertex, bool calc_yintercept, bool print_table,
              bool calc_sumproduct, bool factor_equation, int table_boundaries[2]) {
   if(calc_vertex == 1) {
-    Vertex(equation_standard, vertex, solution, has_solution);
+    CalculateVertex(equation_standard, vertex, solution, has_solution);
   }
   if(calc_yintercept == 1) {
     Intercepts(equation_standard, vertex, solution, has_solution);
@@ -256,61 +267,72 @@ void LoadSettings(bool & calc_vertex, bool & calc_yintercept,
                   bool & print_table, bool & calc_sumproduct, bool & factor_equation,
                   int table_boundaries[2]) {
   /// this needs to be seriously reworked now that we have moved away from arrays - this is a github todo
-  /*
-  string line;
-  ifstream file_equation_standard[3], vertex[2], solution[2], has_solution("quadraticsolver_settings");
-  if(file_equation_standard[3], vertex[2], solution[2], has_solution.is_open()) {
-    while(getline(file_equation_standard[3], vertex[2], solution[2], has_solution, line)) {
-      for(int i = 0; i < 5; i++) {
-        settings[i] = (int)line[i] - 48;
-      }
-      string table_parameter = "";
-      int stop_point;
-      for(int j = 5; j < (int)line.size(); j++) {
-        if(line[j] == ',') {
-          stop_point = j;
-          j = line.size(); // break loop
-        } else {
-          table_parameter = table_parameter + line[j];
-        }
-      }
-      table_boundaries[0] = StringToInt(table_parameter);
-      table_parameter = "";
-      for(int k = stop_point; k < (int)line.size(); k++) {
-        if(line[k] == ',') {
-          k = line.size();  // break loop
-        } else {
-          table_parameter = table_parameter + line[k];
-        }
-      }
-      table_boundaries[1] = StringToInt(table_parameter);
-    }
-    file_equation_standard[3], vertex[2], solution[2], has_solution.close();
-  } else { // "stringmanipulator_equation_standard[3], vertex[2], solution[2], has_solution" does not exist - write a new file with default values
-    ofstream file_equation_standard[3], vertex[2], solution[2], has_solution("quadraticsolver_settings");
-    if(file_equation_standard[3], vertex[2], solution[2], has_solution.is_open()) {
-      file_equation_standard[3], vertex[2], solution[2], has_solution << "11111-10,10";
-      file_equation_standard[3], vertex[2], solution[2], has_solution.close();
-    }
-    calc_vertex = 1;
-  }
-  */
+	string line, table_lower_bound = "", table_upper_bound = "";
+	bool comma_reached = 0;
+	ifstream settings_file("quadratics_settings");
+	if(settings_file.is_open()) {
+		while ( getline (settings_file, line) ) {
+			calc_vertex = CharToBool(line[0]);
+			calc_yintercept = CharToBool(line[1]);
+			print_table = CharToBool(line[2]);
+			calc_sumproduct = CharToBool(line[3]);
+			factor_equation = CharToBool(line[4]);
+			for(int i = 5; i < line.size(); i++) {
+				if(line[i] == ',')
+					comma_reached = 1;
+				else if(!(comma_reached))
+					table_lower_bound = table_lower_bound + line[i]; /* build table_boundaries[0] */
+				else if(comma_reached)
+					table_upper_bound = table_upper_bound + line[i]; /* build table_boundaries[1] */
+			}
+			table_boundaries[0] = atoi(table_lower_bound.c_str());
+			table_boundaries[1] = atoi(table_upper_bound.c_str());
+		} settings_file.close();
+	} else { /* set default values and write "quadratics_settings" with default values */
+		calc_vertex = true;
+		calc_yintercept = true;
+		print_table = true;
+		calc_sumproduct = true;
+		factor_equation = true;
+		table_boundaries[0] = -10;
+		table_boundaries[1] = 10;
+		ofstream settings_file("quadratics_settings");
+		if (settings_file.is_open()) {
+			settings_file << "11111-10,10";
+			settings_file.close();
+		}
+	}
 }
-/// there is a function called atoi() that is built in and does this
-/*
-int StringToInt(string s) {
-  int num;
-  bool negative;
-  for(int i = 0; i < (int)s.size(); i++) {
-    if(s[i] == '-') {
-      negative = 1;
-    } else {
-      num = num * 10 + (s[i] - '0');
-    }
-  }
-  if(negative == 1) {
-    return num * -1;
-  }
-  return num;
+bool CharToBool(char c) {
+	if(c == '0')
+		return false;
+	else
+		return true;
 }
-*/
+char BoolToChar(bool b) {
+	if(b == 0)
+		return '0';
+	else
+		return '1';
+}
+string IntToString(int n) { /// had to write my own function because there weren't any good references online
+	bool is_negative = 0;
+	char digit;
+	int number, remainder; /// kind of bad names
+	string s = "";
+	number = n;
+	if(number < 0) {
+		is_negative = 1;
+		number = number * -1;
+	} while(number != 0) { /* loops until whole number has been converted */
+		remainder = number % 10;
+		number = number / 10;
+		digit = char(remainder + 48); /* convert remainder to a char */
+		s = digit + s; /* build s */
+	} if(is_negative)
+		s = '-' + s;
+	return s;
+}
+
+
+

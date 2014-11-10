@@ -40,20 +40,12 @@ int main() {
   int table_boundaries[2] = { -10, 10};
   double equation_standard[3], vertex[2], solution[2];
   bool has_solution;
-  /* 0 - a
-   * 1 - b
-   * 2 - c
-   * 3 - x-value of vertex
-   * 4 - y-value of vertex
-   * 5 - solution 1
-   * 6 - solution 2
-   * 7 - no solutions
-   */
   cout << "Plain+Simple Quadratic Solver\n";
   cout << "        Press enter\n";
   cin.get();
   int menu_input;
   do {
+	  LoadSettings(calc_vertex, calc_yintercept, print_table, calc_sumproduct, factor_equation, table_boundaries);
     cout << "\nAvailable Functions\n";
     cout << "---------------------------------\n";
     cout << "1. Options\n";
@@ -175,6 +167,7 @@ void Options(bool & calc_vertex, bool & calc_yintercept, bool & print_table,
     cin >> table_boundaries[0];
     cout << "Enter upper bound: ";
     cin >> table_boundaries[1];
+    cout << "New bounds set to (" << table_boundaries[0] << "," << table_boundaries[1] << ")\n";
     break;
   case 7:
 	  break; /* this does nothing so that the thing after the switch case takes it but it doesn't activate the default case */
@@ -182,10 +175,9 @@ void Options(bool & calc_vertex, bool & calc_yintercept, bool & print_table,
     /// it should give the user an error
     break;
   }
-  /// some kind of string_settings stuff should be going on here
   string_settings = string_settings + BoolToChar(calc_vertex) + BoolToChar(calc_yintercept) + BoolToChar(print_table);
   string_settings = string_settings + BoolToChar(calc_sumproduct) + BoolToChar(factor_equation);
-  string_settings = string_settings + IntToString(table_boundaries[0]) + IntToString(table_boundaries[1]);
+  string_settings = string_settings + IntToString(table_boundaries[0]) + ',' + IntToString(table_boundaries[1]);
 
   ofstream settings_file("quadratics_settings");
   if(settings_file.is_open()) {
@@ -196,7 +188,6 @@ void Options(bool & calc_vertex, bool & calc_yintercept, bool & print_table,
 void Table(double equation_standard[3], double vertex[2], double solution[2],
            bool & has_solution, bool calc_vertex, bool calc_yintercept, bool print_table,
            bool calc_sumproduct, bool factor_equation, int table_boundaries[2]) {
-  cout << "print_table\n";
   cout << "   x             f(x)\n";
   for(int i = table_boundaries[0]; i <= table_boundaries[1]; i++) {
     cout << "   " << i << "          " << equation_standard[0] * i * i +
@@ -207,38 +198,56 @@ void Table(double equation_standard[3], double vertex[2], double solution[2],
 void Display(double equation_standard[3], double vertex[2], double solution[2],
              bool & has_solution, bool calc_vertex, bool calc_yintercept, bool print_table,
              bool calc_sumproduct, bool factor_equation, int table_boundaries[2]) {
+	cout << endl << endl;
   if(calc_vertex == 1) {
     CalculateVertex(equation_standard, vertex, solution, has_solution);
   }
   if(calc_yintercept == 1) {
     Intercepts(equation_standard, vertex, solution, has_solution);
   }
-  cout << "Equation: " << equation_standard[0] << "x^2 + " << equation_standard[1]
-       << "x + " <<
-       equation_standard[2] << " = 0\n";
+  cout << "Equation: ";
+  if(equation_standard[0] == 1)
+	  cout << "x^2 ";
+  else if(equation_standard[0] != 0)
+	  cout << equation_standard[0] << "x^2 ";
+  if(equation_standard[1] > 0)
+	  cout << "+ ";
+  else if(equation_standard[0] < 0)
+	  cout << "- ";
+  if(equation_standard[1] == 1)
+	  cout << "x ";
+  else if(equation_standard[1] != 0)
+	  cout << equation_standard[1] << "x ";
+  if(equation_standard[2] > 0)
+	  cout << "+ ";
+  else if(equation_standard[2] < 0)
+	  cout << "- ";
+  if(equation_standard[2] != 0)
+       cout << equation_standard[2];
+  cout << " = 0\n";
   if(!has_solution) {
     cout << "Equation has no solutions\n";
   } else {
     if(solution[0] == solution[1]) {
-      cout << "Root is x= " << solution[0] << endl;
-    } else {
-      cout << "Roots are x = " << solution[0] << " and x = " << solution[1] <<
-           endl;
+      cout << "Root(s): (0," << solution[1] << ")";
+    } if(solution[0] != solution[1]) {
+      cout << " and (0," << solution[1] << ")";
     }
+    cout << endl;
   }
-  if(calc_sumproduct && !has_solution) {
+  if(calc_sumproduct) {
     cout << "Sum of roots = " << solution[0] + solution[1] <<
-         endl; // NOT SURE WHAT HAPPENS IF ONLY ONE SOLUTION
+         endl;
     cout << "Product of roots = " << solution[0] * solution[1] << endl;
   }
-  if(factor_equation && !has_solution) {
+  if(factor_equation) {
     Factor(equation_standard, vertex, solution, has_solution);
   }
   if(calc_vertex == 1) {
-    cout << "Vertex at point (" << vertex[0] << "," << vertex[1] << ")\n";
+    cout << "Vertex: (" << vertex[0] << "," << vertex[1] << ")\n";
   }
   if(calc_yintercept == 1) {
-    cout << "y-Intercept at point (0," << equation_standard[1] << ")\n";
+    cout << "y-Intercept: (0," << equation_standard[1] << ")\n";
   }
   if(print_table == 1) {
     Table(equation_standard, vertex, solution, has_solution, calc_vertex,
@@ -248,8 +257,21 @@ void Display(double equation_standard[3], double vertex[2], double solution[2],
 }
 void Factor(double equation_standard[3], double vertex[2], double solution[2],
             bool & has_solution) {
+	cout << "Factored: ";
   if(solution[0] == solution[1]) {
-    cout << equation_standard[0] << "(x-" << solution[0] << ")^2\n";
+    if(equation_standard[0] == 0)
+    	cout << "0";
+    else if(equation_standard[0] != 1)
+	  cout << equation_standard[0];
+	if(equation_standard[0] != 0) {
+	  cout << "(x ";
+	  if(solution[0] == 0)
+		  cout << ")^2\n";
+	  else if(solution[0] > 1)
+		  cout << "- " << solution[0] << ")^2\n";
+	  else
+		  cout << "+ " << -1 * solution[0] << ")^2\n";
+    }
   } else {
     cout << equation_standard[0] << "(x-" << solution[0] << ")(x-" << solution[1] <<
          ")\n";
@@ -278,8 +300,9 @@ void LoadSettings(bool & calc_vertex, bool & calc_yintercept,
 			calc_sumproduct = CharToBool(line[3]);
 			factor_equation = CharToBool(line[4]);
 			for(int i = 5; i < line.size(); i++) {
-				if(line[i] == ',')
+				if(line[i] == ',') {
 					comma_reached = 1;
+				}
 				else if(!(comma_reached))
 					table_lower_bound = table_lower_bound + line[i]; /* build table_boundaries[0] */
 				else if(comma_reached)

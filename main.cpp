@@ -52,7 +52,7 @@ void LoadSettings(bool & calc_vertex, bool & calc_yintercept,
                   int table_boundaries[2]);
 /* returns the result of plugging int x into double equation[3] */
 double PlugIn(double x, double equation[3]);
-
+void FlipBool(bool &bool_to_flip);
 /* the following are type conversion functions: */
 string BoolToString(bool bool_to_convert);
 bool CharToBool(char c);
@@ -60,7 +60,7 @@ char BoolToChar(bool b);
 char GetSign(double input);
 void DisplayOptions(bool & calc_vertex, bool & calc_yintercept, bool & print_table,
              bool & calc_sumproduct, bool & factor_equation, int table_boundaries[2]);
-
+void ClearScreen();
 
 /** MAIN FUNCTION ***************************************************/
 int main() {
@@ -160,25 +160,25 @@ void Options(bool & calc_vertex, bool & calc_yintercept, bool & print_table,
     cin >> choice;
     switch (choice) {
       case 1:
-        calc_vertex = !calc_vertex;
+        FlipBool(calc_vertex);
         cout << "Calculate Vertex set to << " << BoolToString(calc_vertex) << " >>\n";
         break;
       case 2:
-        calc_yintercept = ! calc_yintercept;
+        FlipBool(calc_yintercept);
         cout << "Calculate y-Intercept set to << " << BoolToString(
                calc_yintercept) << " >>\n";
         break;
       case 3:
-        print_table = !print_table;
+        FlipBool(print_table);
         cout << "Print Table set to << " << BoolToString(print_table) << " >>\n";
         break;
       case 4:
-        calc_sumproduct = !calc_sumproduct;
+        FlipBool(calc_sumproduct);
         cout << "Calculate Sum and Product set to << " << BoolToString(
                calc_sumproduct) << " >>\n";
         break;
       case 5:
-        factor_equation = !factor_equation;
+        FlipBool(factor_equation);
         cout << "Factor Equation set to << " << BoolToString(factor_equation) <<
              " >>\n";
         break;
@@ -196,6 +196,9 @@ void Options(bool & calc_vertex, bool & calc_yintercept, bool & print_table,
         cout << "\nPlease enter a choice between 1 and 7:\n";
         break;
     }
+    ClearScreen();
+    DisplayOptions(calc_vertex, calc_yintercept, print_table, calc_sumproduct,
+                 factor_equation, table_boundaries);
   } while (choice > 7 || choice < 1);
   string string_settings = "" + BoolToChar(calc_vertex) + BoolToChar(
                              calc_yintercept) + BoolToChar(print_table) + BoolToChar(
@@ -408,4 +411,10 @@ void DisplayOptions(bool & calc_vertex, bool & calc_yintercept, bool & print_tab
        << table_boundaries[0] << "," << table_boundaries[1] << ")\n"
        << "\n7. Back to Main Menu\n"
        << "---------------------------------------------\n\n";
+}
+void FlipBool(bool &bool_to_flip) {
+  bool_to_flip = !bool_to_flip;
+}
+void ClearScreen() {
+  cout << "\x1b[2J\x1b[H" << flush;
 }

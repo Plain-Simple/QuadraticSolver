@@ -1,13 +1,11 @@
-/// REMINDER: Function names should be command verbs (ie. PrintTable(), FindIntercepts())
-
-/// note - we need to figure out how to use the settings. Should all the functions be called and the functions decide whether to run, or should functions only be called if they are set to run in settins?
-
-
-/** COMMENTS ********************************************************/
-/*  Your name: Stefan Kussmaul
-  Class block: A      Date: 5/27/14
-  Title: Everything Quadratics
-*/
+/*******************************************************************************
+* main.cpp
+*
+* Description: The source file of "Everything Quadratics" which is a program to
+* solve and manipulate user-inputted quadratic equations.
+*
+* By Stefan Kussmaul
+*******************************************************************************/
 
 /** INCLUDE FILES ***************************************************/
 
@@ -22,7 +20,7 @@ using namespace std;
 /** FUNCTION PROTOTYPES**********************************************/
 /* gets equation from the user */
 void InputEquation(double equation[3]);
-/* finds the quadratic roots of the equation */
+/* finds the quadratic roots of the equation and puts them into solution[2] */
 void CalculateRoots(double equation[3], double solution[2],
                     bool & has_solution);
 /* finds the vertex of the parabola */
@@ -33,13 +31,12 @@ void Options(bool & calc_vertex, bool & calc_yintercept, bool & print_table,
 /* takes in an equation and returns its y intercept */
 double CalculateYIntercept(double equation[3]);
 /* outputs a table of values for the equation */
-/// does it really need all these parameters?
 void Table(double equation[3], bool print_table, int table_boundaries[2]);
 /// description needed
 void Display(double equation[3], double vertex[2], double solution[2],
              bool & has_solution, bool calc_vertex, bool calc_yintercept, bool print_table,
              bool calc_sumproduct, bool factor_equation, int table_boundaries[2]);
-/// description needed
+/* returns factored equation */
 string Factor(double equation[3], double solution[2]);
 /// description needed - also, we need to decide on settings vs options
 void LoadSettings(bool & calc_vertex, bool & calc_yintercept,
@@ -47,17 +44,20 @@ void LoadSettings(bool & calc_vertex, bool & calc_yintercept,
                   int table_boundaries[2]);
 /* returns the result of plugging int x into double equation[3] */
 double PlugIn(double x, double equation[3]);
-/* returns a string when an integer is inputed */
-string IntToString(int n);
+/* converts strings to doubles (used when loading the equation) */
 double StringToDouble(string s);
-
 /* the following are type conversion functions: */
 string BoolToString(bool bool_to_convert);
+/* converts characters to bools (used when loading settings) */
 bool CharToBool(char c);
+/* returns boolean's value as TRUE or FALSE */
 char BoolToChar(bool b);
+/* returns the sign of the double */
 char GetSign(double input);
-void DisplayOptions(bool & calc_vertex, bool & calc_yintercept, bool & print_table,
-             bool & calc_sumproduct, bool & factor_equation, int table_boundaries[2]);
+/* displays the status of the current options (true or false) */
+void DisplayOptions(bool & calc_vertex, bool & calc_yintercept,
+                    bool & print_table, bool & calc_sumproduct,
+                    bool & factor_equation, int table_boundaries[2]);
 
 /* loads most recently used equation */
 bool LoadCurrentEquation(double equation[3]);
@@ -224,8 +224,8 @@ void Options(bool & calc_vertex, bool & calc_yintercept, bool & print_table,
   } while (choice > 7 || choice < 1);
   string string_settings = "" + BoolToChar(calc_vertex) + BoolToChar(
                              calc_yintercept) + BoolToChar(print_table) + BoolToChar(
-                             calc_sumproduct) + BoolToChar(factor_equation) + IntToString(
-                             table_boundaries[0]) + ',' + IntToString(table_boundaries[1]);
+                             calc_sumproduct) + BoolToChar(factor_equation) + to_string(
+                             table_boundaries[0]) + ',' + to_string(table_boundaries[1]);
   ofstream settings_file("quadratics_settings");
   if (settings_file.is_open()) {
     settings_file << string_settings;
@@ -288,12 +288,12 @@ string Factor(double equation[3], double solution[2]) {
   double equation_factor = PlugIn(1, equation) /
                     ((1 - solution[0]) * (1 - solution[1]));
   if (solution[0] != solution[1]) {
-    return IntToString(equation_factor) +
-           "(x" + GetSign(solution[0]) + IntToString(solution[0]) + ")" +
-           "(x" + GetSign(solution[1]) + IntToString(solution[1]) + ")";
+    return to_string(equation_factor) +
+           "(x" + GetSign(solution[0]) + to_string(solution[0]) + ")" +
+           "(x" + GetSign(solution[1]) + to_string(solution[1]) + ")";
   } else {
-    return IntToString(equation_factor) +
-           "(x" + GetSign(solution[0]) + IntToString(solution[0]) + ")^2";
+    return to_string(equation_factor) +
+           "(x" + GetSign(solution[0]) + to_string(solution[0]) + ")^2";
   }
 }
 string BoolToString(bool bool_to_convert) {
@@ -406,30 +406,13 @@ void DisplayOptions(bool & calc_vertex, bool & calc_yintercept, bool & print_tab
        << "\n7. Back to Main Menu\n"
        << "---------------------------------------------\n\n";
 }
-string IntToString(int n) { /// re-added this function because to_string wasn't building
-	bool is_negative = 0;
-	char digit;
-	int number, remainder;
-	string s = "";
-	number = n;
-	if(number < 0) {
-		is_negative = 1;
-		number = number * -1;
-	} while(number != 0) { /* loops until whole number has been converted */
-		remainder = number % 10;
-		number = number / 10;
-		digit = char(remainder + 48); /* convert remainder to a char */
-		s = digit + s; /* build s */
-	} if(is_negative)
-		s = '-' + s;
-	return s;
-}
 void SaveEquation(double equations[3]){
 	ofstream current_equation("quadratics_current");
 	if(current_equation.is_open()) {
 
 	}
 }
+/// what will this do?
 void RemoveEquation(double equation[3]) {
 
 }
@@ -472,7 +455,7 @@ void ReadEquation(double equation[3], string file_name, bool load) {
 		location_b = line.find(','); /* find first comma */
 		location_c = line.find(',', location_b + 1); /* find second comma */
 		while (getline(current_equation, line)) {
-			for(int i = 0; i < line.size(); i++) { /* read in values for equation array */
+			for(int i = 0; i < (int)line.size(); i++) { /* read in values for equation array */
 				if(i < location_b)
 					a = a + line[i];
 				else if(i > location_b && i < location_c)
@@ -510,7 +493,7 @@ double StringToDouble(string s)
 				num = num * 10 + (s[x] - '0');
 			}
 		}
-		for(x = location + 1; x < s.size(); x++)
+		for(x = location + 1; x < (int)s.size(); x++)
 		{
 			decimal = decimal + s[x];
 		} for(x = decimal.size() - 1; x > -1; x--)
@@ -524,30 +507,33 @@ double StringToDouble(string s)
 		return num;
 }
 void PrintEquation(double equation[3]) {
-	  if (equation[0] == 1) {
-	    cout << "x^2 ";
-	  } else if (equation[0] != 0) {
-	    cout << equation[0] << "x^2 ";
-	  }
-	  if (equation[1] > 0) {
-	    cout << "+ ";
-	  } else if (equation[0] < 0) {
-	    cout << "- ";
-	  }
-	  if (equation[1] == 1) {
-	    cout << "x ";
-	  } else if (equation[1] != 0) {
-	    cout << equation[1] << "x ";
-	  }
-	  if (equation[2] > 0) {
-	    cout << "+ ";
-	  } else if (equation[2] < 0) {
-	    cout << "- ";
-	  }
-	  if (equation[2] != 0) {
-	    cout << equation[2];
-	  }
-	  cout << " = 0\n";
+  /* the output will be stored here */
+  string equation_output;
+  /* if the coefficient is 0, nothing happens */
+  if (equation[0] != 0) {
+    /* outputs the coefficient as long as it isn't 1 */
+    if (equation[0] != 1) {
+      equation_output += to_string(equation[0]);
+    }
+    equation_output += "x^2";
+  }
+
+  if (equation[1] != 0) {
+    /* outputs the sign of the coefficient */
+    equation_output += GetSign(equation[1]);
+    if (equation[1] != 1) {
+      equation_output += to_string(equation[1]);
+    }
+    equation_output += 'x';
+  }
+  if (equation[2] != 0) {
+    equation_output += GetSign(equation[2]);
+    if (equation[2] != 1) {
+      equation_output += to_string(equation[2]);
+    }
+  }
+  equation_output += "=0";
+  cout << equation_output << endl;
 }
 void FlipBool(bool &bool_to_flip) {
 	bool_to_flip = !bool_to_flip;

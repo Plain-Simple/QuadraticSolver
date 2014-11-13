@@ -4,7 +4,7 @@
 * Description: The source file of "Everything Quadratics" which is a program to
 * solve and manipulate user-inputted quadratic equations.
 *
-* By Stefan Kussmaul
+* By Stefan Kussmaul and Matthew Mcmullin
 *******************************************************************************/
 
 /** INCLUDE FILES ***************************************************/
@@ -14,6 +14,7 @@
 #include <fstream>
 #include <stdlib.h>
 #include <string>
+#include <vector>
 using namespace std;
 
 
@@ -60,17 +61,14 @@ void DisplayOptions(bool & calc_vertex, bool & calc_yintercept,
                     bool & factor_equation, int table_boundaries[2]);
 
 /* loads most recently used equation */
-bool LoadCurrentEquation(double equation[3]);
-/* saves current equation to equation list */
-void SaveEquation(string a, string b, string c);
-/* removes chosen equation from equation list */
-void RemoveEquation(double equation[3]);
+void SaveEquation(double a, double b, double c);
+/* removes chosen equation from "quadratics_equations" */
+void RemoveEquationFromList(int line_number);
 /* displays equation list */
-void LoadEquation(double equation[3], int equation_number);
-/* read a chosen equation from file given parameters */
-void ReadEquation(double equation[3], string file_name, bool load);
+bool GetEquationFromFile(string file_name, int line_number, bool load, double equation[3], bool print);
 /* prints a properly formatted equation given a, b, and c values */
-void PrintEquation(double equation[3]);
+string EquationToString(double a, double b, double c);
+void PrintEquation(double a, double b, double c);
 void FlipBool(bool &bool_to_flip);
 void ClearScreen();
 
@@ -89,7 +87,15 @@ int main() {
   do {
     LoadSettings(calc_vertex, calc_yintercept, print_table, calc_sumproduct,
                  factor_equation, table_boundaries);
-//    LoadEquation(equation);
+    /* attempt to load last equation used from "quadratics_current" file */
+    bool file_exists = GetEquationFromFile("quadratics_current", 1, 1, equation, 0);
+    if(file_exists) {
+    	cout << "Current equation loaded: ";
+    	PrintEquation(equation[0], equation[1], equation[2]);
+    	cout << endl << endl;
+    }
+    else
+    	InputEquation(equation); /* user needs to enter a new equation because none is loaded */
     cout << "\nAvailable Functions\n";
     cout << "---------------------------------\n";
     cout << "1. Options\n";
@@ -140,15 +146,14 @@ void InputEquation(double equation[3]) {
     cin >> equation[i];
   }
   ofstream current_equation ("quadratics_current");
-  	if (current_equation.is_open()) /* write values to file for future use */
-  	{
-  		current_equation << equation[0] << ',' << equation[1] << ',' << equation[2];
+  	if (current_equation.is_open()) /* write values to file for future use */ {
+  		current_equation << EquationToString(equation[0], equation[1], equation[2]); /* write equation to file */
   		current_equation.close();
   	}
   	cout << "Save equation? (y/n) ";
   	cin >> choice;
-//  	if(choice == 'y')
- // 		SaveEquation(equation);
+  	if(choice == 'y')
+  		SaveEquation(equation[0], equation[1], equation[2]);
 }
 void CalculateRoots(double equation[3], double solution[2],
                     bool & has_solution) {
@@ -406,72 +411,116 @@ void DisplayOptions(bool & calc_vertex, bool & calc_yintercept, bool & print_tab
        << "\n7. Back to Main Menu\n"
        << "---------------------------------------------\n\n";
 }
-void SaveEquation(double equations[3]){
-	ofstream current_equation("quadratics_current");
-	if(current_equation.is_open()) {
-
+/* saves equation to "quadratics_equations" */
+void SaveEquation(double a, double b, double c) {
+	string line, string_equation;
+	vector<string> equations;
+	ifstream file("quadratics_equations"); /* access file */
+	if(file.is_open()) {
+		while(getline(file, line)) {
+			/* copy in line by line to vector */
+			equations.push_back(line);
+		}
+	}
+	ofstream new_file("quadratics_equations"); /* access file again in ofstream */
+	if(new_file.is_open()) {
+		/* overwrite with original equations */
+		for(int i = 0; i < (int)equations.size(); i++)
+			new_file << equations[i];
+		/* add newest equation to file */
+		new_file << EquationToString(a, b, c);
+		new_file.close();
 	}
 }
-/// what will this do?
-void RemoveEquation(double equation[3]) {
-
+/* Removes chosen equation from "quadratics_equations" */
+void RemoveEquationFromList(int line_number) {
+	string line;
+	int line_counter = 1;
+	vector<string> equations;
+	ifstream file("quadratics_equations");
+	if(file.is_open()) {
+		while(getline(file, line)) {
+			if(line_counter != line_number)
+				equations.push_back(line); /* copy all equations except chosen one
+											* to vector */
+			line_counter++;
+		}
+	}
+	ofstream write_file("quadratics_equations");
+	if(write_file.is_open()) {
+		for(int i = 0; i < equations.size(); i++) {
+			write_file << equations[i]; /* write equations back into file */
+		}
+		write_file.close();
+	}
 }
+/* Displays equations stored in "quadratics_equations"
+ * User can choose to load an equation into equations[] for use in program,
+ * or can delete an equation from the file */
 void DisplayEquations(double equation[3]) {
 	string line, a, b, c;
-	int line_counter = 1, choice;
+	int line_counter = 1, choice, remove;
 	ifstream equations("quadratics_equations");
 	if(equations.is_open()) {
 		while(getline(equations, line)) {
-			ReadEquation(equation, "quadratics_equations", true);
+			GetEquationFromFile("quadratics_equations", line_counter, 0, equation, 1);
 			cout << line_counter << ". ";
 //			PrintEquation(equation);
 			line_counter++;
 		}
-		cout << "Choose equation: ";
+		cout << line_counter << ". " << "Delete equation\n";
+		cout << "Enter choice: ";
 		cin >> choice;
-		LoadEquation(equation, choice);
+		if(choice == line_counter) { /* choice is to delete an equation */
+			cout << "Enter number of equation to remove: ";
+			cin >> remove;
+			do {
+				if(remove < 1 || remove > line_counter - 1) {
+					cout << "Error: Invalid choice. Please try again: ";
+					cin >> remove;
+				}
+			}while(remove < 1 || remove > line_counter -1);
+			RemoveEquationFromList(remove);
+		}
+		else
+			GetEquationFromFile("quadratics_equations", choice, 1, equation, 0);
 	} else
 		cout << "Error: No saved equations.\n";
 }
-void LoadEquation(double equation[3], int equation_number) {
-	string line;
-	int line_counter = 1, location_b, location_c;
-	ifstream equations("quadratics_equations");
-	if(equations.is_open()) {
-		while (getline(equations, line)) {
-			if(equation_number == line_counter) { /* found line corresponding to chosen equation */
-				ReadEquation(equation, "quadratics_equations", true);
-			}
-			line_counter++;
-		}
-	}
-}
-void ReadEquation(double equation[3], string file_name, bool load) {
-	/* file_name -> which file to read? load -> should values be loaded into equation[]? */
+/* Reads "file_name" and finds specified line number. If load = true, this function will load
+ * information from the line into equations[] for use by the user. If print = true, the equation
+ * will be printed. */
+bool GetEquationFromFile(string file_name, int line_number, bool load, double equation[3], bool print) {
 	string line, a, b, c;
-	int location_b, location_c;
+	int location_b, location_c, line_counter = 1;
+	bool file_exists = 0;
 	ifstream current_equation(file_name.c_str());
 	if(current_equation.is_open()) {
-		location_b = line.find(','); /* find first comma */
-		location_c = line.find(',', location_b + 1); /* find second comma */
+		file_exists = 1;
 		while (getline(current_equation, line)) {
-			for(int i = 0; i < (int)line.size(); i++) { /* read in values for equation array */
-				if(i < location_b)
-					a = a + line[i];
-				else if(i > location_b && i < location_c)
-					b = b + line[i];
-				else
-					c + c + line[i];
+			if(line_counter == line_number) {
+				location_b = line.find(','); /* find first comma */
+				location_c = line.find(',', location_b + 1); /* find second comma */
+				for(int i = 0; i < (int)line.size(); i++) {
+					if(i < location_b)
+						a = a + line[i];
+					else if(i > location_b && i < location_c)
+						b = b + line[i];
+					else
+						c = c + line[i];
+				}
 			}
-		}
+			line_counter++;
 		if(load) { /* "loads" values in to equation[] according to parameter */
 			equation[0] = StringToDouble(a);
 			equation[1] = StringToDouble(b);
 			equation[2] = StringToDouble(c);
 		}
-		//return true; /* equation loaded successfully */
+		if((print))
+			PrintEquation(StringToDouble(a), StringToDouble(b), StringToDouble(c));
+		}
 	}
-	//return false; /* file not found; no equation to load */
+	return file_exists;
 }
 double StringToDouble(string s)
 {
@@ -506,30 +555,37 @@ double StringToDouble(string s)
 		}
 		return num;
 }
-void PrintEquation(double equation[3]) {
+/* converts numerical values of equation into string form.
+* This will be used to write our equations to files */
+string EquationToString(double a, double b, double c) {
+	string equation = to_string(a) + ',' + to_string(b) + ',' + to_string(c);
+	return equation;
+}
+/* Prints equation with proper formatting */
+void PrintEquation(double a, double b, double c) {
   /* the output will be stored here */
   string equation_output;
   /* if the coefficient is 0, nothing happens */
-  if (equation[0] != 0) {
+  if (a != 0) {
     /* outputs the coefficient as long as it isn't 1 */
-    if (equation[0] != 1) {
-      equation_output += to_string(equation[0]);
+    if (a != 1) {
+      equation_output += to_string(a);
     }
     equation_output += "x^2";
   }
 
-  if (equation[1] != 0) {
+  if (b != 0) {
     /* outputs the sign of the coefficient */
-    equation_output += GetSign(equation[1]);
-    if (equation[1] != 1) {
-      equation_output += to_string(equation[1]);
+    equation_output += GetSign(b);
+    if (b != 1) {
+      equation_output += to_string(b);
     }
     equation_output += 'x';
   }
-  if (equation[2] != 0) {
-    equation_output += GetSign(equation[2]);
-    if (equation[2] != 1) {
-      equation_output += to_string(equation[2]);
+  if (c != 0) {
+    equation_output += GetSign(c);
+    if (c != 1) {
+      equation_output += to_string(c);
     }
   }
   equation_output += "=0";

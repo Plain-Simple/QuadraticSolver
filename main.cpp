@@ -68,7 +68,7 @@ void RemoveEquationFromList(int line_number);
 bool GetEquationFromFile(string file_name, int line_number, bool load, double equation[3], bool print);
 /* prints a properly formatted equation given a, b, and c values */
 string EquationToString(double a, double b, double c);
-void PrintEquation(double a, double b, double c);
+void PrintEquation(double equation[3]);
 void FlipBool(bool &bool_to_flip);
 void ClearScreen();
 
@@ -91,7 +91,7 @@ int main() {
     bool file_exists = GetEquationFromFile("quadratics_current", 1, 1, equation, 0);
     if(file_exists) {
     	cout << "Current equation loaded: ";
-    	PrintEquation(equation[0], equation[1], equation[2]);
+    	PrintEquation(equation);
     	cout << endl << endl;
     }
     else
@@ -448,7 +448,7 @@ void RemoveEquationFromList(int line_number) {
 	}
 	ofstream write_file("quadratics_equations");
 	if(write_file.is_open()) {
-		for(int i = 0; i < equations.size(); i++) {
+		for(int i = 0; i < (int)equations.size(); i++) {
 			write_file << equations[i]; /* write equations back into file */
 		}
 		write_file.close();
@@ -516,8 +516,8 @@ bool GetEquationFromFile(string file_name, int line_number, bool load, double eq
 			equation[1] = StringToDouble(b);
 			equation[2] = StringToDouble(c);
 		}
-		if((print))
-			PrintEquation(StringToDouble(a), StringToDouble(b), StringToDouble(c));
+		if(print)
+			PrintEquation(equation);
 		}
 	}
 	return file_exists;
@@ -562,30 +562,30 @@ string EquationToString(double a, double b, double c) {
 	return equation;
 }
 /* Prints equation with proper formatting */
-void PrintEquation(double a, double b, double c) {
+void PrintEquation(double equation[3]) {
   /* the output will be stored here */
   string equation_output;
   /* if the coefficient is 0, nothing happens */
-  if (a != 0) {
+  if (equation[0] != 0) {
     /* outputs the coefficient as long as it isn't 1 */
-    if (a != 1) {
-      equation_output += to_string(a);
+    if (equation[0] != 1) {
+      equation_output += to_string(equation[0]);
     }
     equation_output += "x^2";
   }
 
-  if (b != 0) {
+  if (equation[1] != 0) {
     /* outputs the sign of the coefficient */
-    equation_output += GetSign(b);
-    if (b != 1) {
-      equation_output += to_string(b);
+    equation_output += GetSign(equation[1]);
+    if (equation[1] != 1) {
+      equation_output += to_string(equation[1]);
     }
     equation_output += 'x';
   }
-  if (c != 0) {
-    equation_output += GetSign(c);
-    if (c != 1) {
-      equation_output += to_string(c);
+  if (equation[2] != 0) {
+    equation_output += GetSign(equation[2]);
+    if (equation[2] != 1) {
+      equation_output += to_string(equation[2]);
     }
   }
   equation_output += "=0";

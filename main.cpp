@@ -46,7 +46,6 @@ void LoadSettings(bool & calc_vertex, bool & calc_yintercept,
 /* returns the result of plugging int x into double equation[3] */
 double PlugIn(double x, double equation[3]);
 /* converts strings to doubles (used when loading the equation) */
-double StringToDouble(string s);
 /* the following are type conversion functions: */
 string BoolToString(bool bool_to_convert);
 /* converts characters to bools (used when loading settings) */
@@ -487,34 +486,35 @@ void DisplayEquations(double equation[3]) {
 	} else
 		cout << "Error: No saved equations.\n";
 }
-/* Reads "file_name" and finds specified line number. If load = true, this function will load
- * information from the line into equations[] for use by the user. If print = true, the equation
- * will be printed. */
+/* Reads "file_name" and finds specified line number. If load = true, this
+   function will load information from the line into equations[] for use by the
+   user. If print = true, the equation will be printed. */
+   /// did you mean equation[] or something else? equations[] doesn't exist
 bool GetEquationFromFile(string file_name, int line_number, bool load, double equation[3], bool print) {
 	string line, a, b, c;
-	int location_b, location_c, line_counter = 1;
-	bool file_exists = 0;
+	int line_counter = 1;
+	bool file_exists = false;
 	ifstream current_equation(file_name.c_str());
 	if(current_equation.is_open()) {
-		file_exists = 1;
+		file_exists = true;
 		while (getline(current_equation, line)) {
 			if(line_counter == line_number) {
-				location_b = line.find(','); /* find first comma */
-				location_c = line.find(',', location_b + 1); /* find second comma */
-				for(int i = 0; i < (int)line.size(); i++) {
-					if(i < location_b)
-						a = a + line[i];
-					else if(i > location_b && i < location_c)
-						b = b + line[i];
-					else
-						c = c + line[i];
-				}
+				int first_comma = line.find(','); /* find first comma */
+				int second_comma = line.find_last_of(','); /* find second comma */
+				/* REMINDER: line.substr() takes in the size of the substring, NOT the
+				             ending point as the second parameter (yes, that sucks) */
+				a = line.substr(0, first_comma);
+				b = line.substr(first_comma + 1, second_comma - first_comma);
+				/* c starts at the second comma, and the size of c is the size of the
+				   whole line minus the size of a, b, and the 2 commas */
+        c = line.substr(second_comma + 1,
+                        line.size()  - (a.size() + b.size() + 2));
 			}
 			line_counter++;
 		if(load) { /* "loads" values in to equation[] according to parameter */
-			equation[0] = StringToDouble(a);
-			equation[1] = StringToDouble(b);
-			equation[2] = StringToDouble(c);
+			equation[0] = atof(a.c_str());
+			equation[1] = atof(b.c_str());
+			equation[2] = atof(c.c_str());
 		}
 		if(print)
 			PrintEquation(equation);
@@ -522,39 +522,7 @@ bool GetEquationFromFile(string file_name, int line_number, bool load, double eq
 	}
 	return file_exists;
 }
-double StringToDouble(string s)
-{
-	string decimal = "";
-	int x, location;
-	double num = 0.0, dec = 0.0;
-	bool negative = 0;
 
-		location = s.find('.');
-		if(s[0] == '-') {
-			negative = 1;
-			for(x = 1; x < location; x++) {
-				num = num * 10 + (s[x] - '0');
-			}
-		}
-		else {
-			for(x = 0; x < location; x++)
-			{
-				num = num * 10 + (s[x] - '0');
-			}
-		}
-		for(x = location + 1; x < (int)s.size(); x++)
-		{
-			decimal = decimal + s[x];
-		} for(x = decimal.size() - 1; x > -1; x--)
-		{
-			dec = dec * 0.1 + 0.1 * (decimal[x] - '0');
-		}
-		num = num + dec;
-		if(negative == 1) {
-			num = num * -1;
-		}
-		return num;
-}
 /* converts numerical values of equation into string form.
 * This will be used to write our equations to files */
 string EquationToString(double a, double b, double c) {

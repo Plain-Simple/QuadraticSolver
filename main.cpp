@@ -23,7 +23,7 @@ using namespace std;
 void InputEquation(double equation[3]);
 /* finds the quadratic roots of the equation and puts them into solution[2] */
 void CalculateRoots(double equation[3], double solution[2],
-                    bool & has_solution);
+                    bool & has_solution, bool print);
 /* finds the vertex of the parabola */
 void CalculateVertex(double equation[3], double vertex[2]);
 /// description needed, also options needs to be a verb
@@ -64,18 +64,23 @@ void SaveEquation(double a, double b, double c);
 /* removes chosen equation from "quadratics_equations" */
 void RemoveEquationFromList(int line_number);
 /* displays equation list */
+void DisplayEquations(double equation[3]);
+/* gets an equation from specified file */
 bool GetEquationFromFile(string file_name, int line_number, bool load, double equation[3], bool print);
-/* prints a properly formatted equation given a, b, and c values */
+/* takes three doubles and puts them in a format that can be written to a file */
 string EquationToString(double a, double b, double c);
-void PrintEquation(double equation[3]);
+/* prints a properly formatted equation given a, b, and c values */
+void PrintEquation(double a, double b, double c);
 void FlipBool(bool &bool_to_flip);
 void ClearScreen();
 
 
 /** MAIN FUNCTION ***************************************************/
 int main() {
+ /* set default values */
   bool calc_vertex = true, calc_yintercept = true, print_table = true,
-       calc_sumproduct = true, factor_equation = true;
+       calc_sumproduct = true, factor_equation = true, equation_loaded = false;
+  /* equation_loaded tells if there is currently an equation entered */
   int table_boundaries[2] = { -10, 10};
   double equation[3], vertex[2], solution[2];
   bool has_solution;
@@ -84,48 +89,108 @@ int main() {
   cin.get();
   int menu_input;
   do {
+	/* load settings from file */
     LoadSettings(calc_vertex, calc_yintercept, print_table, calc_sumproduct,
                  factor_equation, table_boundaries);
     /* attempt to load last equation used from "quadratics_current" file */
-    bool file_exists = GetEquationFromFile("quadratics_current", 1, 1, equation, 0);
-    if(file_exists) {
+    equation_loaded = GetEquationFromFile("quadratics_current", 1, 1, equation, 0);
+    if(equation_loaded) {
     	cout << "Current equation loaded: ";
-    	PrintEquation(equation);
+    	PrintEquation(equation[0], equation[1], equation[2]);
     	cout << endl << endl;
     }
     else
-    	InputEquation(equation); /* user needs to enter a new equation because none is loaded */
+    	cout << "No equation loaded\n\n";
+    int line_counter = 1;
     cout << "\nAvailable Functions\n";
     cout << "---------------------------------\n";
-    cout << "1. Options\n";
-    cout << "2. Equation\n";
-    cout << "3. Quit\n";
+    if(equation_loaded) {
+    	/* only display if an equation is loaded and ready for use */
+    	cout << line_counter << ". Solve Equation\n";
+    	line_counter++;
+    	cout << line_counter << ". Factor Equation\n"; /// I'm sure you can figure out a more efficient way to do this
+    	line_counter++;
+    	cout << line_counter << ". Analyze Equation\n";
+    	line_counter++;
+    }
+    cout << line_counter << ".  Enter New Equation\n";
+    line_counter++;
+    cout << line_counter << ".  Choose From Equation List\n";
+    line_counter++;
+    cout << line_counter << ".  Options\n";
+    line_counter++;
+    cout << line_counter << ". Help\n";
+    line_counter++;
+    cout << line_counter << ". Quit\n";
+    line_counter++;
     cout << "---------------------------------\n";
     cout << "Enter choice: ";
     cin >> menu_input;
-    do {
-      switch (menu_input) {
-        case 1:
-          Options(calc_vertex, calc_yintercept, print_table, calc_sumproduct,
-                  factor_equation, table_boundaries);
-          break;
-        case 2:
-          InputEquation(equation);
-          CalculateRoots(equation, solution, has_solution);
-          Display(equation, vertex, solution, has_solution, calc_vertex,
-                  calc_yintercept, print_table, calc_sumproduct, factor_equation,
-                  table_boundaries);
-          break;
-        case 3:
-          exit(0);
-          break;
-        default:
-          cout << "Please enter a valid number between 1 and 3\n\n";
-          break;
-      }
+    if(equation_loaded) {
+    	/* menu when equation IS loaded */
+    	do {
+    		switch (menu_input) {
+    		case 1:
+    			CalculateRoots(equation, solution, has_solution, true);
+  			break;
+    		case 2:
+    			string f = Factor(equation, solution);
+    			cout << f;
+    			break;
+    		case 3:
+    			Display(equation, vertex, solution, has_solution, calc_vertex,
+        	        calc_yintercept, print_table, calc_sumproduct, factor_equation,
+        	        table_boundaries);
+    			break;
+    		case 4:
+    			InputEquation(equation);
+    			break;
+    		case 5:
+    			DisplayEquations(equation);
+    			break;
+    		case 6:
+    			Options(calc_vertex, calc_yintercept, print_table, calc_sumproduct,
+        	                factor_equation, table_boundaries);
+    			break;
+    		case 7:
+    			cout << "This function has not been created yet\n\n";
+    			break;
+    		case 8:
+    			exit(0);
+    			break;
+    		default:
+    			cout << "Please enter a valid number between 1 and 8\n\n";
+    			break;
+    		}
+    }while (menu_input < 1 || menu_input > 8);
     }
-    while (menu_input != 1 && menu_input != 2 && menu_input != 3);
-    cout << "\n\nHit enter to return to menu "; // not working
+    else {
+    	/* menu when equation IS NOT loaded */			/// there's a better way to do this
+    	do{
+    		switch(menu_input) {
+    		case 1:
+    		 	InputEquation(equation);
+    		    break;
+    		case 2:
+    		    DisplayEquations(equation);
+    		    break;
+    		case 3:
+    		    Options(calc_vertex, calc_yintercept, print_table, calc_sumproduct,
+    		         factor_equation, table_boundaries);
+    		    break;
+    		case 4:
+    		    cout << "This function has not been created yet\n\n";
+    		    break;
+    		case 5:
+    			exit(0);
+    		    break;
+    		default:
+    			cout << "Please enter a valid number between 1 and 5\n\n";
+    		    break;
+    		}
+    	}while(menu_input < 1 || menu_input > 5);
+    }
+    cout << "\n\nHit enter to return to menu "; /// want this to make the program wait until user hits enter
     /// what isn't working? In what way?
     /// this happens when we use a combination of cin, getline, and other stuff. We will have to figure out one to use to standardize everything
     cin.get();
@@ -155,7 +220,7 @@ void InputEquation(double equation[3]) {
   		SaveEquation(equation[0], equation[1], equation[2]);
 }
 void CalculateRoots(double equation[3], double solution[2],
-                    bool & has_solution) {
+                    bool & has_solution, bool print) {
   /* b^2 - 4ac */
   int discriminant = pow(equation[1], 2) - (4 * equation[0] * equation[2]);
   if (discriminant < 0) {
@@ -167,6 +232,20 @@ void CalculateRoots(double equation[3], double solution[2],
     solution[0] = (-equation[1] + sqrt(discriminant)) / (2 * equation[0]);
     /* -b - root b^2 - 4ac / 2a */
     solution[1] = (-equation[1] - sqrt(discriminant)) / (2 * equation[0]);
+  }
+  if(print) {
+	  if (!has_solution) {
+	    cout << "Equation has no solutions\n";
+	  }
+	  else {
+	    if (solution[0] == solution[1]) {
+	      cout << "Root(s): (0," << solution[1] << ")";
+	    }
+	    if (solution[0] != solution[1]) {
+	      cout << " and (0," << solution[1] << ")";
+	    }
+	    cout << endl;
+	  }
   }
 }
 void CalculateVertex(double equation[3], double vertex[2]) {
@@ -225,7 +304,7 @@ void Options(bool & calc_vertex, bool & calc_yintercept, bool & print_table,
         cout << "\nPlease enter a choice between 1 and 7:\n";
         break;
     }
-  } while (choice > 7 || choice < 1);
+  } while (choice < 1 || choice > 7);
   string string_settings = "" + BoolToChar(calc_vertex) + BoolToChar(
                              calc_yintercept) + BoolToChar(print_table) + BoolToChar(
                              calc_sumproduct) + BoolToChar(factor_equation) + to_string(
@@ -255,19 +334,8 @@ void Display(double equation[3], double vertex[2], double solution[2],
     CalculateYIntercept(equation);
   }
   cout << "Equation: ";
-  PrintEquation(equation);
-  if (!has_solution) {
-    cout << "Equation has no solutions\n";
-  }
-  else {
-    if (solution[0] == solution[1]) {
-      cout << "Root(s): (0," << solution[1] << ")";
-    }
-    if (solution[0] != solution[1]) {
-      cout << " and (0," << solution[1] << ")";
-    }
-    cout << endl;
-  }
+  PrintEquation(equation[0], equation[1], equation[2]);
+  CalculateRoots(equation, solution, has_solution, true);
   if (calc_sumproduct) {
     cout << "Sum of roots = " << solution[0] + solution[1] <<
          endl;
@@ -287,7 +355,8 @@ void Display(double equation[3], double vertex[2], double solution[2],
     Table(equation, print_table, table_boundaries);
   }
 }
-string Factor(double equation[3], double solution[2]) {
+string Factor(double equation[3], double solution[2]) { /// why does this return a string?
+														/// why not just void, and print it directly?
   /* plug in 1 */
   double equation_factor = PlugIn(1, equation) /
                     ((1 - solution[0]) * (1 - solution[1]));
@@ -517,7 +586,7 @@ bool GetEquationFromFile(string file_name, int line_number, bool load, double eq
 			equation[2] = atof(c.c_str());
 		}
 		if(print)
-			PrintEquation(equation);
+			PrintEquation(equation[0], equation[1], equation[2]);
 		}
 	}
 	return file_exists;
@@ -530,30 +599,30 @@ string EquationToString(double a, double b, double c) {
 	return equation;
 }
 /* Prints equation with proper formatting */
-void PrintEquation(double equation[3]) {
+void PrintEquation(double a, double b, double c) {
   /* the output will be stored here */
   string equation_output;
   /* if the coefficient is 0, nothing happens */
-  if (equation[0] != 0) {
+  if (a != 0) {
     /* outputs the coefficient as long as it isn't 1 */
-    if (equation[0] != 1) {
-      equation_output += to_string(equation[0]);
+    if (a != 1) {
+      equation_output += to_string(a);
     }
     equation_output += "x^2";
   }
 
-  if (equation[1] != 0) {
+  if (b != 0) {
     /* outputs the sign of the coefficient */
-    equation_output += GetSign(equation[1]);
-    if (equation[1] != 1) {
-      equation_output += to_string(equation[1]);
+    equation_output += GetSign(b);
+    if (b != 1) {
+      equation_output += to_string(b);
     }
     equation_output += 'x';
   }
-  if (equation[2] != 0) {
-    equation_output += GetSign(equation[2]);
-    if (equation[2] != 1) {
-      equation_output += to_string(equation[2]);
+  if (c != 0) {
+    equation_output += GetSign(c);
+    if (c != 1) {
+      equation_output += to_string(c);
     }
   }
   equation_output += "=0";

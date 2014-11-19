@@ -132,10 +132,9 @@ int main() {
     		switch (menu_input) {
     		case 1:
     			CalculateRoots(equation, solution, has_solution, true);
-  			break;
+          break;
     		case 2:
-    			string f = Factor(equation, solution);
-    			cout << f;
+    			cout << Factor(equation, solution);
     			break;
     		case 3:
     			Display(equation, vertex, solution, has_solution, calc_vertex,

@@ -33,13 +33,13 @@ void Options(bool & calc_vertex, bool & calc_yintercept, bool & print_table,
 double CalculateYIntercept(double equation[3]);
 /* outputs a table of values for the equation */
 void Table(double equation[3], bool print_table, int table_boundaries[2]);
-/// description needed
+/* displays information about equation */
 void Display(double equation[3], double vertex[2], double solution[2],
              bool & has_solution, bool calc_vertex, bool calc_yintercept, bool print_table,
              bool calc_sumproduct, bool factor_equation, int table_boundaries[2]);
 /* returns factored equation */
 string Factor(double equation[3], double solution[2]);
-/// description needed - also, we need to decide on settings vs options
+/* loads parameters for options from file */
 void LoadSettings(bool & calc_vertex, bool & calc_yintercept,
                   bool & print_table, bool & calc_sumproduct, bool & factor_equation,
                   int table_boundaries[2]);
@@ -95,7 +95,7 @@ int main() {
     /* attempt to load last equation used from "quadratics_current" file */
     equation_loaded = GetEquationFromFile("quadratics_current", 1, 1, equation, 0);
     if(equation_loaded) {
-    	cout << "Current equation loaded: ";
+    	cout << "Current equation loaded: "; /* prints last-used equation if one exists */
     	PrintEquation(equation[0], equation[1], equation[2]);
     	cout << endl << endl;
     }
@@ -108,7 +108,7 @@ int main() {
     	/* only display if an equation is loaded and ready for use */
     	cout << line_counter << ". Solve Equation\n";
     	line_counter++;
-    	cout << line_counter << ". Factor Equation\n"; /// I'm sure you can figure out a more efficient way to do this
+    	cout << line_counter << ". Factor Equation\n"; 
     	line_counter++;
     	cout << line_counter << ". Analyze Equation\n";
     	line_counter++;
@@ -190,8 +190,6 @@ int main() {
     	}while(menu_input < 1 || menu_input > 5);
     }
     cout << "\n\nHit enter to return to menu "; /// want this to make the program wait until user hits enter
-    /// what isn't working? In what way?
-    /// this happens when we use a combination of cin, getline, and other stuff. We will have to figure out one to use to standardize everything
     cin.get();
     cin.get(); /* has to be repeated once */
   }
@@ -215,14 +213,14 @@ void InputEquation(double equation[3]) {
   	}
   	cout << "Save equation? (y/n) ";
   	cin >> choice;
-  	if(choice == 'y')
-  		SaveEquation(equation[0], equation[1], equation[2]);
+  	if(choice == 'y') 
+  		SaveEquation(equation[0], equation[1], equation[2]); /* saves current equation to file if user chooses to do so */
 }
 void CalculateRoots(double equation[3], double solution[2],
                     bool & has_solution, bool print) {
   /* b^2 - 4ac */
   int discriminant = pow(equation[1], 2) - (4 * equation[0] * equation[2]);
-  if (discriminant < 0) {
+  if (discriminant < 0) { /* check to see if equation has a solution */
     has_solution = false;
   }
   else {
@@ -232,7 +230,7 @@ void CalculateRoots(double equation[3], double solution[2],
     /* -b - root b^2 - 4ac / 2a */
     solution[1] = (-equation[1] - sqrt(discriminant)) / (2 * equation[0]);
   }
-  if(print) {
+  if(print) { /* prints if bool "print" was passed as true. Gives a little flexibility */
 	  if (!has_solution) {
 	    cout << "Equation has no solutions\n";
 	  }
@@ -248,17 +246,18 @@ void CalculateRoots(double equation[3], double solution[2],
   }
 }
 void CalculateVertex(double equation[3], double vertex[2]) {
-  vertex[0] = (-equation[1]) / (2 * equation[0]);
-  vertex[1] = PlugIn(vertex[0], equation);
+  vertex[0] = (-equation[1]) / (2 * equation[0]); /* calculate x value of vertex */
+  vertex[1] = PlugIn(vertex[0], equation); /* solve for y value */
 }
 double CalculateYIntercept(double equation[3]) {
-  return PlugIn(0, equation);
+  return PlugIn(0, equation); /* calculate for x = 0 */
 }
 void Options(bool & calc_vertex, bool & calc_yintercept, bool & print_table,
              bool & calc_sumproduct, bool & factor_equation,
              int table_boundaries[2]) {
   LoadSettings(calc_vertex, calc_yintercept, print_table, calc_sumproduct,
-               factor_equation, table_boundaries);
+               factor_equation, table_boundaries); /* load settings from file again to make sure
+               						everything is up to date */
   DisplayOptions(calc_vertex, calc_yintercept, print_table, calc_sumproduct,
                  factor_equation, table_boundaries);
   cout << "Enter number of choice you would like to change: ";
@@ -304,7 +303,8 @@ void Options(bool & calc_vertex, bool & calc_yintercept, bool & print_table,
         break;
     }
   } while (choice < 1 || choice > 7);
-  string string_settings = "" + BoolToChar(calc_vertex) + BoolToChar(
+  /* put everything in proper format so it can be written to file */
+  string string_settings = "" + BoolToChar(calc_vertex) + BoolToChar( 
                              calc_yintercept) + BoolToChar(print_table) + BoolToChar(
                              calc_sumproduct) + BoolToChar(factor_equation) + to_string(
                              table_boundaries[0]) + ',' + to_string(table_boundaries[1]);
@@ -371,8 +371,7 @@ string Factor(double equation[3], double solution[2]) { /// why does this return
 string BoolToString(bool bool_to_convert) {
   if (bool_to_convert == true) {
     return "TRUE";
-  }
-  else {
+  } else {
     return "FALSE";
   }
 }
@@ -385,34 +384,33 @@ void LoadSettings(bool & calc_vertex,
                   int table_boundaries[2]) {
   string line, table_lower_bound = "", table_upper_bound = "";
   bool comma_reached = 0;
-  ifstream settings_file("quadratics_settings");
+  ifstream settings_file("quadratics_settings"); /* read file "quadratics_settings" */
   if (settings_file.is_open()) {
-    while (getline(settings_file, line)) {
-      calc_vertex = CharToBool(line[0]);
+    while (getline(settings_file, line)) { /* read first line */
+    /* read in values, which have already been put in the file in a specified order */
+      calc_vertex = CharToBool(line[0]); 
       calc_yintercept = CharToBool(line[1]);
       print_table = CharToBool(line[2]);
       calc_sumproduct = CharToBool(line[3]);
       factor_equation = CharToBool(line[4]);
       for (int i = 5; i < (int)line.size(); i++) {
         if (line[i] == ',') {
-          comma_reached = 1;
+          comma_reached = 1; /* find comma, which separates the two values */
         }
-        else if (!(comma_reached))
-          /* build table_boundaries[0] */
+        else if (!(comma_reached)) /* build table_boundaries[0] as a string */
         {
           table_lower_bound = table_lower_bound + line[i];
-        }
-        else if (comma_reached)
-          /* build table_boundaries[1] */
+        } else if (comma_reached) /* build table_boundaries[1] as a string */
         {
           table_upper_bound = table_upper_bound + line[i];
         }
       }
+      /* convert from string to int */
       table_boundaries[0] = atoi(table_lower_bound.c_str());
       table_boundaries[1] = atoi(table_upper_bound.c_str());
     }
     settings_file.close();
-    /* set default values and write "quadratics_settings" with default values */
+    /* set default values and write "quadratics_settings" with these values for future use */
   }
   else {
     calc_vertex = true;
@@ -424,7 +422,7 @@ void LoadSettings(bool & calc_vertex,
     table_boundaries[1] = 10;
     ofstream settings_file("quadratics_settings");
     if (settings_file.is_open()) {
-      settings_file << "11111-10,10";
+      settings_file << "11111-10,10"; /* default */
       settings_file.close();
     }
   }
@@ -447,7 +445,7 @@ char BoolToChar(bool b) {
 }
 
 double PlugIn(double x, double equation[3]) {
-  /* ax^2 + bx + c */
+  /* plugs x value into equation, returns y value */
   return (equation[0] * pow(x, 2)) + (equation[1] * x) + (equation[2]);
 }
 
@@ -461,7 +459,7 @@ char GetSign(double input) {
 
 void DisplayOptions(bool & calc_vertex, bool & calc_yintercept, bool & print_table,
              bool & calc_sumproduct, bool & factor_equation, int table_boundaries[2]) {
-  cout << "\n\nSettings: \n"
+  cout << "\n\nSettings: \n" /* display current settings */
        << "---------------------------------------------\n"
        << "1. Calculate Vertex......................."
        << BoolToString(calc_vertex)
@@ -482,7 +480,8 @@ void DisplayOptions(bool & calc_vertex, bool & calc_yintercept, bool & print_tab
 void SaveEquation(double a, double b, double c) {
 	string line, string_equation;
 	vector<string> equations;
-	ifstream file("quadratics_equations"); /* access file */
+	ifstream file("quadratics_equations"); /* access file "quadratics_equations, 
+						where equations are stored*/
 	if(file.is_open()) {
 		while(getline(file, line)) {
 			/* copy in line by line to vector */
@@ -494,7 +493,7 @@ void SaveEquation(double a, double b, double c) {
 		/* overwrite with original equations */
 		for(int i = 0; i < (int)equations.size(); i++)
 			new_file << equations[i];
-		/* add newest equation to file */
+		/* add newest equation to file in proper string format */
 		new_file << EquationToString(a, b, c);
 		new_file.close();
 	}
@@ -509,7 +508,8 @@ void RemoveEquationFromList(int line_number) {
 		while(getline(file, line)) {
 			if(line_counter != line_number)
 				equations.push_back(line); /* copy all equations except chosen one
-											* to vector */
+							 to vector. This ensures the one we want to 
+							 remove is not copied over to the overwritten file */
 			line_counter++;
 		}
 	}
@@ -527,12 +527,12 @@ void RemoveEquationFromList(int line_number) {
 void DisplayEquations(double equation[3]) {
 	string line, a, b, c;
 	int line_counter = 1, choice, remove;
-	ifstream equations("quadratics_equations");
+	ifstream equations("quadratics_equations"); /* access file where equations are saved */
 	if(equations.is_open()) {
 		while(getline(equations, line)) {
+			/* accesses current line, prints it without storing the values in equation[] */
 			GetEquationFromFile("quadratics_equations", line_counter, 0, equation, 1);
 			cout << line_counter << ". ";
-//			PrintEquation(equation);
 			line_counter++;
 		}
 		cout << line_counter << ". " << "Delete equation\n";
@@ -548,8 +548,8 @@ void DisplayEquations(double equation[3]) {
 				}
 			}while(remove < 1 || remove > line_counter -1);
 			RemoveEquationFromList(remove);
-		}
-		else
+		} else /* must have chosen an equation from the list. Get the equation from file 
+			and write values to equation[] */
 			GetEquationFromFile("quadratics_equations", choice, 1, equation, 0);
 	} else
 		cout << "Error: No saved equations.\n";
@@ -566,12 +566,10 @@ bool GetEquationFromFile(string file_name, int line_number, bool load, double eq
 	if(current_equation.is_open()) {
 		file_exists = true;
 		while (getline(current_equation, line)) {
-			if(line_counter == line_number) {
+			if(line_counter == line_number) { /* specified line has been reached */
 				int first_comma = line.find(','); /* find first comma */
 				int second_comma = line.find_last_of(','); /* find second comma */
-				/* REMINDER: line.substr() takes in the size of the substring, NOT the
-				             ending point as the second parameter (yes, that sucks) */
-				a = line.substr(0, first_comma);
+				a = line.substr(0, first_comma); /* builds values from string line */
 				b = line.substr(first_comma + 1, second_comma - first_comma);
 				/* c starts at the second comma, and the size of c is the size of the
 				   whole line minus the size of a, b, and the 2 commas */
